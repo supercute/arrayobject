@@ -1,0 +1,28 @@
+{
+    "name": "supercute/array-object",
+    "description": "",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "shumskikh",
+            "email": "d@shumskikh.ru"
+        }
+    ],
+    "require-dev": {
+        "phpstan/phpstan": "^0.12",
+        "squizlabs/php_codesniffer": "^3.6",
+        "phpro/grumphp": "dev-master",
+        "symfony/var-dumper": "^5.3"
+    },
+    "autoload": {
+        "psr-0": {
+            "supercute": "src"
+        }
+    },
+    "scripts": {
+        "analyze": "phpstan analyse src",
+        "lint": "phpcs --standard=PSR2 -s src",
+        "fix-lint": "phpcbf -p --standard=PSR2 src/"
+    }
+}

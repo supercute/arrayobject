@@ -12,7 +12,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function change_key_case();
+    public function changeKeyCase();
 
     /**
      * @return mixed
@@ -22,7 +22,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function column($column_key);
+    public function column($columnKey);
 
     /**
      * @return mixed
@@ -32,27 +32,27 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function count_values();
+    public function countValues();
 
     /**
      * @return mixed
      */
-    public function diff_assoc(array ...$arrays);
+    public function diffAssoc(array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function diff_key(array ...$arrays);
+    public function diffKey(array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function diff_uassoc(callable $key_compare_func, array ...$arrays);
+    public function diffUassoc(callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function diff_ukey(callable $key_compare_func, array ...$arrays);
+    public function diffUkey(callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
@@ -62,12 +62,12 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function fill_keys($value);
+    public function fillKeys($value);
 
     /**
      * @return mixed
      */
-    public function fill(int $start_index, int $count, $value);
+    public function fill(int $startIndex, int $count, $value);
 
     /**
      * @return mixed
@@ -82,22 +82,22 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function intersect_assoc(array ...$arrays);
+    public function intersectAssoc(array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function intersect_key(array ...$arrays);
+    public function intersectKey(array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function intersect_uassoc(callable $key_compare_func, array ...$arrays);
+    public function intersectUassoc(callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function intersect_ukey(callable $key_compare_func, array ...$arrays);
+    public function intersectUkey(callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
@@ -107,22 +107,22 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function key_exists($key);
+    public function keyExists($key);
 
     /**
      * @return mixed
      */
-    public function key_first();
+    public function keyFirst();
 
     /**
      * @return mixed
      */
-    public function key_last();
+    public function keyLast();
 
     /**
      * @return mixed
      */
-    public function keys($search_value, bool $strict = false);
+    public function keys($searchValue, bool $strict = false);
 
     /**
      * @return mixed
@@ -132,7 +132,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function merge_recursive();
+    public function mergeRecursive();
 
     /**
      * @return mixed
@@ -177,7 +177,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function replace_recursive();
+    public function replaceRecursive();
 
     /**
      * @return mixed
@@ -202,7 +202,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function slice(int $offset, ?int $length = null, bool $preserve_keys = false);
+    public function slice(int $offset, ?int $length = null, bool $preserveKeys = false);
 
     /**
      * @return mixed
@@ -217,32 +217,32 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function udiff_assoc(callable $value_compare_func, array ...$arrays);
+    public function udiffAssoc(callable $valueCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function udiff_uassoc(callable $value_compare_func, callable $key_compare_func, array ...$arrays);
+    public function udiffUassoc(callable $valueCompareFunc, callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function udiff(callable $value_compare_func, array ...$arrays);
+    public function udiff(callable $valueCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function uintersect_assoc(callable $value_compare_func, array ...$arrays);
+    public function uintersectAssoc(callable $valueCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function uintersect_uassoc(callable $value_compare_func, callable $key_compare_func, array ...$arrays);
+    public function uintersectUassoc(callable $valueCompareFunc, callable $keyCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
      */
-    public function uintersect(callable $value_compare_func, array ...$arrays);
+    public function uintersect(callable $valueCompareFunc, array ...$arrays);
 
     /**
      * @return mixed
@@ -262,7 +262,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function walk_recursive(callable $callback, $userdata = null);
+    public function walkRecursive(callable $callback, $userdata = null);
 
     /**
      * @return mixed
@@ -288,7 +288,7 @@ interface Arrayble
     /**
      * @return mixed
      */
-    public function in_array($needle);
+    public function inArray($needle);
 
     /**
      * @return mixed

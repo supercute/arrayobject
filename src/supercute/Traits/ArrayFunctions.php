@@ -12,772 +12,629 @@ use supercute\ArrayObject;
  */
 trait ArrayFunctions
 {
-    private function checkEmptyArray(): void
-    {
-        if (!$this->array) {
-            throw new \InvalidArgumentException("Empty array, check previous function call result");
-        }
-    }
+    /**
+     * @return \Traversable
+     */
+    abstract public function getIterator(): \Traversable;
 
     /**
      * @param int $case
-     * @return ArrayObject | ArrayFunctions
+     * @return ArrayFunctions
      */
-    public function change_key_case(int $case = CASE_LOWER): ArrayObject
+    public function changeKeyCase(int $case = CASE_LOWER)
     {
-        $this->checkEmptyArray();
-        $this->array = array_change_key_case($this->array, $case);
-        return $this;
+        $generator = function ($array) use ($case) {
+            foreach ($array as $key => $value) {
+                if ($case === CASE_LOWER) {
+                    yield strtolower($key);
+                } else {
+                    yield strtoupper($key);
+                }
+            }
+        };
+
+        foreach ($generator((array) $this->getIterator()) as $key => $value) {
+            $array[$key] = $value;
+        }
+
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $length
      * @param bool $preserve_keys
-     * @return ArrayObject | ArrayFunctions
      */
-    public function chunk(int $length, bool $preserve_keys = false): ArrayObject
+    public function chunk(int $length, bool $preserve_keys = false)
     {
-        $this->checkEmptyArray();
-        $this->array = array_chunk($this->array, $length, $preserve_keys);
-        return $this;
+        $generator = function ($array) use ($length) {
+            for ($i = 0, $iMax = count($array); $i <= $iMax; $i += $length) {
+                yield array_slice($array, $i, $length);
+            }
+        };
+
+        $array = [];
+
+        foreach ($generator((array) $this->getIterator()) as $key => $value) {
+            $array[$key] = $value;
+        }
+
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param $column_key
      * @param null $index_key
-     * @return ArrayObject | ArrayFunctions
+     * @return ArrayFunctions
      */
-    public function column($column_key, $index_key = null): ArrayObject
+    public function column($column_key, $index_key = null)
     {
-        $this->checkEmptyArray();
-        $this->array = array_column($this->array, $column_key, $index_key);
-        return $this;
+        return $this->getObjectFromArray(array_column((array)$this->getIterator(), $column_key, $index_key));
     }
 
     /**
      * @param array $array
      * @param bool $isKeys
-     * @return ArrayObject | ArrayFunctions
      */
-    public function combine(array $array, bool $isKeys = false): ArrayObject
+    public function combine(array $array, bool $isKeys = false)
     {
-        $this->checkEmptyArray();
-        $this->array = $isKeys ? array_combine($array, $this->array) : array_combine($this->array, $array);
-        return $this;
+       return $this->getObjectFromArray(
+           $isKeys ? array_combine($array, (array)$this->getIterator()) : array_combine((array)$this->getIterator(), $array)
+       );
     }
 
-    /**
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function count_values(): ArrayObject
+    public function countValues()
     {
-        $this->checkEmptyArray();
-        $this->array = array_count_values($this->array);
-        return $this;
+         return $this->getObjectFromArray(array_count_values((array)$this->getIterator()));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function diff_assoc(array ...$arrays): ArrayObject
+    public function diffAssoc(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_diff_assoc(...$arrays);
-        return $this;
+        return $this->getObjectFromArray(array_diff_assoc(...$arrays));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function diff_key(array ...$arrays): ArrayObject
+    public function diffKey(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_diff_key($this->array, ...$arrays);
-        return $this;
+       return $this->getObjectFromArray(array_diff_key((array)$this->getIterator(), ...$arrays));
     }
 
     /**
-     * @param callable $key_compare_func
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
+     * @return ArrayFunctions
      */
-    public function diff_uassoc(callable $key_compare_func, array ...$arrays): ArrayObject
+    public function diffUassoc(callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_diff_uassoc($this->array, $arrays, $key_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_diff_uassoc((array)$this->getIterator(), $arrays, $keyCompareFunc));
     }
 
     /**
-     * @param callable $key_compare_func
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function diff_ukey(callable $key_compare_func, array ...$arrays): ArrayObject
+    public function diffUkey(callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_diff_ukey($this->array, $arrays, $key_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_diff_ukey((array)$this->getIterator(), $arrays, $keyCompareFunc));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function diff(array ...$arrays): ArrayObject
+    public function diff(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_diff($this->array, $arrays);
-        return $this;
+       return $this->getObjectFromArray(array_diff((array)$this->getIterator(), $arrays));
     }
 
     /**
      * @param $value
-     * @return ArrayObject | ArrayFunctions
      */
-    public function fill_keys($value): ArrayObject
+    public function fillKeys($value)
     {
-        $this->checkEmptyArray();
-        $this->array = array_keys($this->array, $value);
-        return $this;
+        return $this->getObjectFromArray(array_keys((array)$this->getIterator(), $value));
     }
 
     /**
-     * @param int $start_index
+     * @param int $startIndex
      * @param int $count
      * @param $value
-     * @return ArrayObject | ArrayFunctions
      */
-    public function fill(int $start_index, int $count, $value): ArrayObject
+    public function fill(int $startIndex, int $count, $value)
     {
-        $this->checkEmptyArray();
-        $this->array = array_fill($start_index, $count, $value);
-        return $this;
+        return $this->getObjectFromArray(array_fill($startIndex, $count, $value));
     }
 
     /**
      * @param callable|null $callback
      * @param int $mode
-     * @return ArrayObject | ArrayFunctions
      */
-    public function filter(callable $callback = null, int $mode = 0): ArrayObject
+    public function filter(callable $callback = null, int $mode = 0)
     {
-        $this->checkEmptyArray();
-        $this->array = array_filter($this->array, $callback, $mode);
-        return $this;
+        return $this->getObjectFromArray(array_filter((array) $this->getIterator(), $callback, $mode));
     }
 
-    /**
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function flip(): ArrayObject
+    public function flip()
     {
-        $this->checkEmptyArray();
-        $this->array = array_flip($this->array);
-        return $this;
+       return $this->getObjectFromArray(array_flip((array) $this->getIterator()));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function intersect_assoc(array ...$arrays): ArrayObject
+    public function intersectAssoc(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_intersect_assoc($this->array, $arrays);
-        return $this;
+       return $this->getObjectFromArray(array_intersect_assoc((array) $this->getIterator(), $arrays));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function intersect_key(array ...$arrays): ArrayObject
+    public function intersectKey(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_intersect_key($this->array, $arrays);
-        return $this;
+       return $this->getObjectFromArray(array_intersect_key((array) $this->getIterator(), $arrays));
     }
 
     /**
-     * @param callable $key_compare_func
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function intersect_uassoc(callable $key_compare_func, array ...$arrays): ArrayObject
+    public function intersectUassoc(callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_intersect_uassoc($this->array, $arrays, $key_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_intersect_uassoc((array) $this->getIterator(), $arrays, $keyCompareFunc));
     }
 
     /**
-     * @param callable $key_compare_func
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function intersect_ukey(callable $key_compare_func, array ...$arrays): ArrayObject
+    public function intersectUkey(callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_intersect_key($this->array, $arrays, $key_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_intersect_key((array) $this->getIterator(), $arrays, $keyCompareFunc));
     }
 
     /**
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function intersect(array ...$arrays): ArrayObject
+    public function intersect(array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_intersect($this->array, $arrays);
-        return $this;
+       return $this->getObjectFromArray(array_intersect((array) $this->getIterator(), $arrays));
     }
 
     /**
      * @param $key
-     * @return ArrayObject | ArrayFunctions
+     * @return bool
      */
-    public function key_exists($key): ArrayObject
+    public function keyExists($key): bool
     {
-        $this->checkEmptyArray();
-        $this->boolean = array_key_exists($key, $this->array);
-        $this->array = null;
+        return array_key_exists($key, (array) $this->getIterator());
+    }
 
-        return $this;
+
+    public function keyFirst()
+    {
+       return array_key_first((array) $this->getIterator());
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @return int|string
      */
-    public function key_first(): ArrayObject
+    public function keyLast()
     {
-        $this->mixed = array_key_first($this->array);
-        $this->array = null;
-
-        return $this;
+        return array_key_last((array) $this->getIterator());
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function key_last(): ArrayObject
-    {
-        $this->checkEmptyArray();
-        $this->mixed = array_key_last($this->array);
-        $this->array = null;
-
-        return $this;
-    }
-
-    /**
-     * @param $search_value
+     * @param $searchValue
      * @param bool $strict
-     * @return ArrayObject | ArrayFunctions
      */
-    public function keys($search_value, bool $strict = false): ArrayObject
+    public function keys($searchValue, bool $strict = false)
     {
-        $this->checkEmptyArray();
-        $this->array = array_keys($this->array, $search_value, $strict);
-        return $this;
+        return $this->getObjectFromArray(array_keys((array) $this->getIterator(), $searchValue, $strict));
     }
 
     /**
      * @param callable $callback
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function map(callable $callback, array ...$arrays): ArrayObject
+    public function map(callable $callback, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_map($callback, $this->array, $arrays);
-        return $this;
-    }
+        $generator = function (...$arrays) use ($callback) {
+            foreach ($arrays as $array) {
+                foreach ($array as $value) {
+                    yield $callback($value);
+                }
+            }
+        };
 
-    /**
-     * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function merge_recursive(array ...$arrays): ArrayObject
-    {
-        $this->checkEmptyArray();
-        $this->array = array_merge_recursive($this->array, ...$arrays);
-        return $this;
-    }
+        $array = [];
 
-    /**
-     * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function merge(array ...$arrays): ArrayObject
-    {
-        $this->checkEmptyArray();
-        $this->array = array_merge($this->array, ...$arrays);
-        return $this;
-    }
-
-    /**
-     * @param int $array1_sort_order
-     * @param int $array1_sort_flags
-     * @param mixed ...$rest
-     * @return ArrayObject | ArrayFunctions
-     * @throws \Exception
-     */
-    public function multisort($array1_sort_order = SORT_ASC, $array1_sort_flags = SORT_REGULAR, ...$rest): ArrayObject
-    {
-        $this->checkEmptyArray();
-        if (!array_multisort($this->array, $array1_sort_order, $array1_sort_flags, $rest)) {
-            throw new \Exception("function array_multisort() returned false");
+        foreach ($generator((array) $this->getIterator(), $arrays) as $key => $value) {
+           $array[$key] = $value;
         }
-        return $this;
+
+        return $this->getObjectFromArray($array);
+    }
+
+    /**
+     * @param array ...$arrays
+     */
+    public function mergeRecursive(array ...$arrays)
+    {
+       return $this->getObjectFromArray(array_merge_recursive((array) $this->getIterator(), ...$arrays));
+    }
+
+    /**
+     * @param array ...$arrays
+     */
+    public function merge(array ...$arrays)
+    {
+       return $this->getObjectFromArray(array_merge((array) $this->getIterator(), ...$arrays));
+    }
+
+    /**
+     * @param int $arraySortOrder
+     * @param int $arraySortflags
+     * @param mixed ...$rest
+     * @return bool
+     */
+    public function multisort(int $arraySortOrder = SORT_ASC, int $arraySortflags = SORT_REGULAR, ...$rest): bool
+    {
+       return array_multisort((array) $this->getIterator(), $arraySortOrder, $arraySortflags, $rest);
     }
 
     /**
      * @param int $lenght
      * @param $value
-     * @return ArrayObject | ArrayFunctions
      */
-    public function pad(int $lenght, $value): ArrayObject
+    public function pad(int $lenght, $value)
     {
-        $this->checkEmptyArray();
-        $this->array = array_pad($this->array, $lenght, $value);
-        return $this;
+        return $this->getObjectFromArray(array_pad((array) $this->getIterator(), $lenght, $value));
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @return mixed|null
      */
-    public function pop(): ArrayObject
+    public function pop()
     {
-        $this->checkEmptyArray();
-        $this->mixed = array_pop($this->array);
-        $this->array = null;
-
-        return $this;
+        $array = (array)$this->getIterator();
+        return array_pop($array);
     }
 
-    /**
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function product(): ArrayObject
-    {
-        $this->checkEmptyArray();
-        $this->mixed = array_product($this->array);
-        $this->array = null;
 
-        return $this;
+    /**
+     * @return float|int
+     */
+    public function product()
+    {
+        return array_product((array) $this->getIterator());
     }
 
     /**
      * @param mixed ...$values
-     * @return ArrayObject | ArrayFunctions
+     * @return int
      */
-    public function push(...$values)
+    public function push(...$values): int
     {
-        $this->checkEmptyArray();
-        array_push($this->array, ...$values);
-        return $this;
+        $array = (array)$this->getIterator();
+        return array_push($array, ...$values);
     }
 
     /**
      * @param int $num
-     * @return ArrayObject | ArrayFunctions
      */
-    public function rand(int $num = 1): ArrayObject
+    public function rand(int $num = 1)
     {
-        $this->checkEmptyArray();
-        $result = array_rand($this->array, $num);
+        $result = array_rand((array) $this->getIterator(), $num);
 
         if (is_array($result)) {
-            $this->array = $result;
-        } else {
-            $this->mixed = $result;
-            $this->array = null;
+            return $this->getObjectFromArray($result);
         }
 
-        return $this;
+        return $result;
     }
 
     /**
      * @param callable $callback
      * @param null $initial
-     * @return ArrayObject | ArrayFunctions
+     * @return mixed
      */
-    public function reduce(callable $callback, $initial = null): ArrayObject
+    public function reduce(callable $callback, $initial = null)
     {
-        $this->checkEmptyArray();
-        $this->mixed = array_reduce($this->array, $callback, $initial);
-        $this->array = null;
-
-        return $this;
+        return array_reduce((array) $this->getIterator(), $callback, $initial);
     }
 
     /**
      * @param array ...$replacements
-     * @return ArrayObject | ArrayFunctions
      */
-    public function replace_recursive(array ...$replacements): ArrayObject
+    public function replaceRecursive(array ...$replacements)
     {
-        $this->checkEmptyArray();
-        $this->array = array_replace_recursive($this->array, $replacements);
-        return $this;
+        return $this->getObjectFromArray(array_replace_recursive((array) $this->getIterator(), $replacements));
     }
 
     /**
      * @param array ...$replacements
-     * @return ArrayObject | ArrayFunctions
      */
-    public function replace(array ...$replacements): ArrayObject
+    public function replace(array ...$replacements)
     {
-        $this->checkEmptyArray();
-        $this->array = array_replace($this->array, $replacements);
-        return $this;
+        return $this->getObjectFromArray(array_replace((array) $this->getIterator(), $replacements));
     }
 
     /**
      * @param bool $preserve_keys
-     * @return ArrayObject | ArrayFunctions
      */
-    public function reverse(bool $preserve_keys = false): ArrayObject
+    public function reverse(bool $preserve_keys = false)
     {
-        $this->checkEmptyArray();
-        $this->array = array_reverse($this->array, $preserve_keys);
-        return $this;
+        return $this->getObjectFromArray(array_reverse((array) $this->getIterator(), $preserve_keys));
     }
 
     /**
      * @param $needle
      * @param bool $strict
-     * @return ArrayObject | ArrayFunctions
+     * @return int|string|false
      */
-    public function search($needle, bool $strict = false): ArrayObject
+    public function search($needle, bool $strict = false)
     {
-        $this->checkEmptyArray();
-        $result = array_search($needle, $this->array, $strict);
-
-        if (!is_bool($result)) {
-            $this->mixed = $result;
-        } else {
-            $this->boolean = $result;
-        }
-
-        $this->array = null;
-
-        return $this;
+        return array_search($needle, (array) $this->getIterator(), $strict);
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @return mixed|null
      */
-    public function shift(): ArrayObject
+    public function shift()
     {
-        $this->checkEmptyArray();
-        $this->mixed = array_shift($this->array);
-        $this->array = null;
-
-        return $this;
+        $array = (array)$this->getIterator();
+        return array_shift($array);
     }
 
     /**
      * @param int $offset
      * @param int|null $length
-     * @param bool $preserve_keys
-     * @return ArrayObject | ArrayFunctions
+     * @param bool $preserveKeys
      */
-    public function slice(int $offset, ?int $length = null, bool $preserve_keys = false): ArrayObject
+    public function slice(int $offset, ?int $length = null, bool $preserveKeys = false)
     {
-        $this->checkEmptyArray();
-        $this->array = array_slice($this->array, $offset, $length, $preserve_keys);
-        return $this;
+        return $this->getObjectFromArray(array_slice((array) $this->getIterator(), $offset, $length, $preserveKeys));
     }
 
     /**
      * @param int $offset
      * @param int|null $length
      * @param array $replacements
-     * @return ArrayObject | ArrayFunctions
      */
-    public function splice(int $offset, ?int $length = null, array $replacements): ArrayObject
+    public function splice(int $offset, ?int $length = null, array $replacements)
     {
-        $this->checkEmptyArray();
-        $this->array = array_splice($this->array, $offset, $length, $replacements);
-        return $this;
+        $array = (array)$this->getIterator();
+        return $this->getObjectFromArray(array_splice($array, $offset, $length, $replacements));
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @return float|int
      */
-    public function sum(): ArrayObject
+    public function sum()
     {
-        $this->checkEmptyArray();
-        $this->mixed = array_sum($this->array);
-        $this->array = null;
-
-        return $this;
+        return array_sum((array) $this->getIterator());
     }
 
     /**
-     * @param callable $value_compare_func
+     * @param callable $valueCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function udiff_assoc(callable $value_compare_func, array ...$arrays): ArrayObject
+    public function udiffAssoc(callable $valueCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_udiff_assoc($this->array, $arrays, $value_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_udiff_assoc((array) $this->getIterator(), $arrays, $valueCompareFunc));
     }
 
     /**
-     * @param callable $value_compare_func
-     * @param callable $key_compare_func
+     * @param callable $valueCompareFunc
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
+     * @return ArrayFunctions
      */
-    public function udiff_uassoc(callable $value_compare_func, callable $key_compare_func, array ...$arrays): ArrayObject
+    public function udiffUassoc(callable $valueCompareFunc, callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_udiff_uassoc($this->array, $arrays, $value_compare_func, $key_compare_func);
-        return $this;
+       return $this->getObjectFromArray(array_udiff_uassoc((array) $this->getIterator(), $arrays, $valueCompareFunc, $keyCompareFunc));
     }
 
     /**
-     * @param callable $value_compare_func
+     * @param callable $valueCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function udiff(callable $value_compare_func, array ...$arrays): ArrayObject
+    public function udiff(callable $valueCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_udiff($this->array, $arrays, $value_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_udiff((array) $this->getIterator(), $arrays, $valueCompareFunc));
     }
 
     /**
-     * @param callable $value_compare_func
+     * @param callable $valueCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
+     * @return ArrayFunctions
      */
-    public function uintersect_assoc(callable $value_compare_func, array ...$arrays): ArrayObject
+    public function uintersectAssoc(callable $valueCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_uintersect_assoc($this->array, $arrays, $value_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_uintersect_assoc((array) $this->getIterator(), $arrays, $valueCompareFunc));
     }
 
     /**
-     * @param callable $value_compare_func
-     * @param callable $key_compare_func
+     * @param callable $valueCompareFunc
+     * @param callable $keyCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function uintersect_uassoc(callable $value_compare_func, callable $key_compare_func, array ...$arrays): ArrayObject
+    public function uintersectUassoc(callable $valueCompareFunc, callable $keyCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_uintersect_uassoc($this->array, $arrays, $value_compare_func, $key_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_uintersect_uassoc((array) $this->getIterator(), $arrays, $valueCompareFunc, $keyCompareFunc));
     }
 
     /**
-     * @param callable $value_compare_func
+     * @param callable $valueCompareFunc
      * @param array ...$arrays
-     * @return ArrayObject | ArrayFunctions
      */
-    public function uintersect(callable $value_compare_func, array ...$arrays): ArrayObject
+    public function uintersect(callable $valueCompareFunc, array ...$arrays)
     {
-        $this->checkEmptyArray();
-        $this->array = array_uintersect($this->array, $arrays, $value_compare_func);
-        return $this;
+        return $this->getObjectFromArray(array_uintersect((array) $this->getIterator(), $arrays, $valueCompareFunc));
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function unique(int $flags = SORT_STRING): ArrayObject
+    public function unique(int $flags = SORT_STRING)
     {
-        $this->checkEmptyArray();
-        $this->array = array_unique($this->array, $flags);
-        return $this;
+        return $this->getObjectFromArray(array_unique((array) $this->getIterator(), $flags));
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @param ...$values
      */
-    public function unshift(...$values): ArrayObject
+    public function unshift(...$values)
     {
-        $this->checkEmptyArray();
-        $this->unshift($this->array, $values);
-        return $this;
+        $array = (array)$this->getIterator();
+        array_unshift($array, $values);
+        return $this->getObjectFromArray($array);
     }
 
-    /**
-     * @return ArrayObject | ArrayFunctions
-     */
-    public function values(): ArrayObject
+    public function values()
     {
-        $this->checkEmptyArray();
-        $this->array = array_values($this->array);
-        return $this;
+        return $this->getObjectFromArray(array_values((array) $this->getIterator()));
     }
 
     /**
      * @param callable $callback
      * @param null $userdata
-     * @return ArrayObject | ArrayFunctions
      */
-    public function walk_recursive(callable $callback, $userdata = null): ArrayObject
+    public function walkRecursive(callable $callback, $userdata = null)
     {
-        $this->checkEmptyArray();
-        $this->boolean = array_walk_recursive($this->array, $callback, $userdata);
-        $this->array = null;
-
-        return $this;
+        $array = (array)$this->getIterator();
+        array_walk_recursive($array, $callback, $userdata);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param callable $callback
      * @param null $userdata
-     * @return ArrayObject | ArrayFunctions
      */
-    public function walk(callable $callback, $userdata = null): ArrayObject
+    public function walk(callable $callback, $userdata = null)
     {
-        $this->checkEmptyArray();
-        $this->boolean = array_walk($this->array, $callback, $userdata);
-        $this->array = null;
+        $array = (array) $this->getIterator();
+        array_walk($array, $callback, $userdata);
 
-        return $this;
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function arsort(int $flags = SORT_REGULAR): ArrayObject
+    public function arsort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        arsort($this->array, $flags);
-        return $this;
+        $array = (array) $this->getIterator();
+        arsort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function asort(int $flags = SORT_REGULAR): ArrayObject
+    public function asort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        asort($this->array, $flags);
-        return $this;
+        $array = (array) $this->getIterator();
+        asort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
-     * @return ArrayObject | ArrayFunctions
+     * @return int
      */
-    public function count(): ArrayObject
+    public function count(): int
     {
-        $this->checkEmptyArray();
-        $this->mixed = count($this->array);
-        $this->array = null;
-
-        return $this;
+      return count((array) $this->getIterator());
     }
 
     /**
      * @param $needle
      * @param bool $strict
-     * @return ArrayObject | ArrayFunctions
      */
-    public function in_array($needle, bool $strict = false): ArrayObject
+    public function inArray($needle, bool $strict = false)
     {
-        $this->checkEmptyArray();
-        $this->mixed = in_array($needle, $this->array, $strict);
-        $this->array = null;
-
-        return $this;
+       return in_array($needle, (array) $this->getIterator(), $strict);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function krsort(int $flags = SORT_REGULAR): ArrayObject
+    public function krsort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        krsort($this->array, $flags);
-        return $this;
+        $array = (array) $this->getIterator();
+        krsort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function ksort(int $flags = SORT_REGULAR): ArrayObject
+    public function ksort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        ksort($this->array, $flags);
-        return $this;
+        $array = (array) $this->getIterator();
+        ksort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function rsort(int $flags = SORT_REGULAR): ArrayObject
+    public function rsort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        rsort($this->array, $flags);
-
-        return $this;
+        $array = (array) $this->getIterator();
+        rsort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param int $flags
-     * @return ArrayObject | ArrayFunctions
      */
-    public function sort(int $flags = SORT_REGULAR): ArrayObject
+    public function sort(int $flags = SORT_REGULAR)
     {
-        $this->checkEmptyArray();
-        sort($this->array, $flags);
-
-        return $this;
+        $array = (array) $this->getIterator();
+        sort($array, $flags);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param callable $callback
-     * @return ArrayObject | ArrayFunctions
      */
-    public function uasort(callable $callback): ArrayObject
+    public function uasort(callable $callback)
     {
-        $this->checkEmptyArray();
-        uasort($this->array, $callback);
-
-        return $this;
+        $array = (array) $this->getIterator();
+        uasort($array, $callback);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param callable $callback
-     * @return ArrayObject | ArrayFunctions
      */
-    public function uksort(callable $callback): ArrayObject
+    public function uksort(callable $callback)
     {
-        $this->checkEmptyArray();
-        uksort($this->array, $callback);
-
-        return $this;
+        $array = (array) $this->getIterator();
+        uksort($array, $callback);
+        return $this->getObjectFromArray($array);
     }
 
     /**
      * @param callable $callback
-     * @return ArrayObject | ArrayFunctions
      */
-    public function usort(callable $callback): ArrayObject
+    public function usort(callable $callback)
     {
-        $this->checkEmptyArray();
-        usort($this->array, $callback);
+        $array = (array) $this->getIterator();
+        usort($array, $callback);
+        return $this->getObjectFromArray($array);
+    }
 
-        return $this;
+    /**
+     * @param array $array
+     */
+    private function getObjectFromArray(array $array)
+    {
+        return new static(new \ArrayObject($array));
     }
 }

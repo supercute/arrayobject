@@ -38,6 +38,15 @@ final class ArrayObject implements Arrayble
     }
 
     /**
+     * @param array $array
+     * @return ArrayObject
+     */
+    public static function fromArray(array $array): ArrayObject
+    {
+        return new self(new \ArrayObject($array));
+    }
+
+    /**
      * @return array
      */
     public function flush(): array

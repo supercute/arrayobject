@@ -1,4 +1,5 @@
-# Package for use array functions as Object functions
+# Package for use array functions as Object methods
+
 Accepts any iterator, casting to array
 ## Usage
 

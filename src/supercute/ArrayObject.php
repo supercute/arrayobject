@@ -7,7 +7,7 @@ use supercute\Contacts\Arrayble;
 use supercute\Traits\ArrayFunctions;
 
 /**
- * Class for use array function as Object
+ * Class for use array functions as Object functions
  * @package ArrayObject
  * @author Danil Shumskikh <d@shumskikh.ru>
  * @version 1.0
